@@ -1,5 +1,8 @@
 import * as sdk from "https://deno.land/x/appwrite/mod.ts";
+import express from "npm:express@4.21.2";
 import "jsr:@std/dotenv/load";
+
+const app = express();
 
 let client = new sdk.Client();
 
@@ -10,5 +13,3 @@ client
 ;
 
 
-
-console.log("done");
