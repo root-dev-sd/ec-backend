@@ -12,4 +12,10 @@ client
     .setKey(Deno.env.get("SECRET_KEY")) // Your secret API key
 ;
 
+app.get('/', (req, res) => {
+    res.json("got you!");
+})
 
+app.listen(3000, () => {
+    console.log("app is running on 3000");
+})
