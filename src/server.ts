@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import helmet from "helmet";
-// import jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { genSalt, hash, compare } from "bcrypt-ts";
 import prisma from "./db";
@@ -120,13 +120,20 @@ app.post(
         password: user.password,
       };
       const secret = process.env.TOKEN_KEY;
-      // const token = jwt.sign(
-      //   payload,
-      //   "hjs82KSD9!@sldj*&sDla%0Ksjeh4@3*DFJKL3kjd83s",
-      //   {
-      //     expiresIn: "1h",
-      //   }
-      // );
+      const token = jwt.sign(
+        payload,
+        "hjs82KSD9!@sldj*&sDla%0Ksjeh4@3*DFJKL3kjd83s",
+        {
+          expiresIn: "1h",
+        }
+      );
+      return res
+        .status(200)
+        .json({ message: "log in successfuly", token, user });
+    } else {
+      return res
+        .status(401)
+        .json({ message: "wrong phone number or password" });
     }
   }
 );
