@@ -44,8 +44,10 @@ app.post("/api/v1/signup", async (req: Request, res: Response) => {
   if (!isValidPhoneNumber(phoneNumber)) {
     res.status(400).json({ message: "phone number not compatible" });
   }
-  const exist = await prisma.user.findUnique({
-    where: { email },
+  const exist = await prisma.user.findFirst({
+    where: {
+      OR: [{ email }, { phoneNumber }],
+    },
   });
   if (exist) {
     res.status(409).json({ message: "user already exists" });
@@ -61,21 +63,6 @@ app.post("/api/v1/signup", async (req: Request, res: Response) => {
     },
   });
   res.status(201).json({ message: "user created successfully" });
-  // genSalt(10)
-  //   .then((salt) => hash(password, salt))
-  //   .then((hash) => {
-  // const newUser = prisma.user.create({
-  //   data: {
-  //     name,
-  //     email,
-  //     phoneNumber,
-  //     password: hash,
-  //   },
-  // });
-  //   })
-  //   .then(() => {
-  //     res.status(201).json({ message: "user created successfully" });
-  //   });
 });
 
 app.post("/api/v1/login", (req: Request, res: Response) => {
