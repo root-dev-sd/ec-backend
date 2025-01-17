@@ -145,6 +145,27 @@ app.post(
     if (!v.validate(data, emailLogIn).valid) {
       return res.status(400).json({ message: "invalid request body" });
     }
+    const { email, password } = data;
+    const user = await prisma.user.findFirst({
+      where: { email },
+    });
+    if (!user) {
+      return res.status(404).json({ message: "wrong email or password" });
+    }
+    const payload = {
+      name: user.name,
+      id: user.id,
+      password: user.password,
+    };
+    const secret = process.env.TOKEN_KEY;
+    const token = jwt.sign(
+      payload,
+      "hjs82KSD9!@sldj*&sDla%0Ksjeh4@3*DFJKL3kjd83s",
+      {
+        expiresIn: "1h",
+      }
+    );
+    return res.status(200).json({ message: "log in successfuly", token, user });
   }
 );
 
