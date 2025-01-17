@@ -31,42 +31,45 @@ const signUpSchema = {
   additionalProperties: false,
 };
 
-app.post("/api/v1/signup", async (req: Request, res: Response) => {
-  const data = req.body;
-  if (!v.validate(data, signUpSchema).valid) {
-    res.status(400).json({ message: "invalid request body" });
+app.post(
+  "/api/v1/signup",
+  async (req: Request, res: Response): Promise<Response | any> => {
+    const data = req.body;
+    if (!v.validate(data, signUpSchema).valid) {
+      return res.status(400).json({ message: "invalid request body" });
+    }
+    const { name, email, phoneNumber, password } = data;
+    const nameResult = isValidFullName(name);
+    if (!nameResult.isValid) {
+      return res.status(400).json(nameResult.error);
+    }
+    if (!isValidPhoneNumber(phoneNumber)) {
+      return res.status(400).json({ message: "phone number not compatible" });
+    }
+    const emailExist = await prisma.user.findUnique({
+      where: { email },
+    });
+    const phoneExist = await prisma.user.findUnique({
+      where: { email },
+    });
+    if (emailExist) {
+      return res.status(409).json({ message: "user already exists" });
+    } else if (phoneExist) {
+      return res.status(409).json({ message: "user already exists" });
+    }
+    const salt = await genSalt(10);
+    const hashed = await hash(password, salt);
+    const newUser = await prisma.user.create({
+      data: {
+        name,
+        email,
+        phoneNumber,
+        password: hashed,
+      },
+    });
+    return res.status(201).json({ message: "user created successfully" });
   }
-  const { name, email, phoneNumber, password } = data;
-  const nameResult = isValidFullName(name);
-  if (!nameResult.isValid) {
-    res.status(400).json(nameResult.error);
-  }
-  if (!isValidPhoneNumber(phoneNumber)) {
-    res.status(400).json({ message: "phone number not compatible" });
-  }
-  const emailExist = await prisma.user.findUnique({
-    where: { email },
-  });
-  const phoneExist = await prisma.user.findUnique({
-    where: { email },
-  });
-  if (emailExist) {
-    res.status(409).json({ message: "user already exists" });
-  } else if (phoneExist) {
-    res.status(409).json({ message: "user already exists" });
-  }
-  const salt = await genSalt(10);
-  const hashed = await hash(password, salt);
-  const newUser = await prisma.user.create({
-    data: {
-      name,
-      email,
-      phoneNumber,
-      password: hashed,
-    },
-  });
-  res.status(201).json({ message: "user created successfully" });
-});
+);
 
 app.post("/api/v1/login", (req: Request, res: Response) => {
   res.send("log in route");
