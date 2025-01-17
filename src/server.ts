@@ -44,7 +44,7 @@ app.post("/api/v1/signup", async (req: Request, res: Response) => {
   if (!isValidPhoneNumber(phoneNumber)) {
     res.status(400).json({ message: "phone number not compatible" });
   }
-  const exist = await prisma.user.findFirst({
+  const exist = await prisma.user.findMany({
     where: {
       OR: [{ email }, { phoneNumber }],
     },
