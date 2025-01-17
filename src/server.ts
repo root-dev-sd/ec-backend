@@ -44,12 +44,16 @@ app.post("/api/v1/signup", async (req: Request, res: Response) => {
   if (!isValidPhoneNumber(phoneNumber)) {
     res.status(400).json({ message: "phone number not compatible" });
   }
-  const exist = await prisma.user.findMany({
-    where: {
-      OR: [{ email }, { phoneNumber }],
-    },
+  const emailExist = await prisma.user.findUnique({
+    where: { email },
   });
-  if (exist) {
+  if (emailExist) {
+    res.status(409).json({ message: "user already exists" });
+  }
+  const phoneExist = await prisma.user.findUnique({
+    where: { email },
+  });
+  if (phoneExist) {
     res.status(409).json({ message: "user already exists" });
   }
   const salt = await genSalt(10);
