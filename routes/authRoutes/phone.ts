@@ -1,7 +1,6 @@
 import express, { Request, Response } from "express";
 import twilio from "twilio";
 import dotenv from "dotenv";
-import prisma from "../../db";
 import { Validator } from "jsonschema";
 // import {
 //   isValidFullName,

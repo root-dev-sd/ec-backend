@@ -50,21 +50,32 @@ app.post("/api/v1/signup", async (req: Request, res: Response) => {
   if (exist) {
     res.status(409).json({ message: "user already exists" });
   }
-  genSalt(10)
-    .then((salt) => hash(password, salt))
-    .then((hash) => {
-      const newUser = prisma.user.create({
-        data: {
-          name,
-          email,
-          phoneNumber,
-          password: hash,
-        },
-      });
-    })
-    .then(() => {
-      res.status(201).json({ message: "user created successfully" });
-    });
+  const salt = await genSalt(10);
+  const hashed = await hash(password, salt);
+  const newUser = await prisma.user.create({
+    data: {
+      name,
+      email,
+      phoneNumber,
+      password: hashed,
+    },
+  });
+  res.status(201).json({ message: "user created successfully" });
+  // genSalt(10)
+  //   .then((salt) => hash(password, salt))
+  //   .then((hash) => {
+  // const newUser = prisma.user.create({
+  //   data: {
+  //     name,
+  //     email,
+  //     phoneNumber,
+  //     password: hash,
+  //   },
+  // });
+  //   })
+  //   .then(() => {
+  //     res.status(201).json({ message: "user created successfully" });
+  //   });
 });
 
 app.post("/api/v1/login", (req: Request, res: Response) => {
