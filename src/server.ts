@@ -47,13 +47,12 @@ app.post("/api/v1/signup", async (req: Request, res: Response) => {
   const emailExist = await prisma.user.findUnique({
     where: { email },
   });
-  if (emailExist) {
-    res.status(409).json({ message: "user already exists" });
-  }
   const phoneExist = await prisma.user.findUnique({
     where: { email },
   });
-  if (phoneExist) {
+  if (emailExist) {
+    res.status(409).json({ message: "user already exists" });
+  } else if (phoneExist) {
     res.status(409).json({ message: "user already exists" });
   }
   const salt = await genSalt(10);
