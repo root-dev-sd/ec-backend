@@ -1,13 +1,26 @@
 import express, { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import helmet from "helmet";
+import prisma from "../db";
+import {
+  isValidFullName,
+  ValidationResult,
+  ValidationError,
+  isValidationError,
+  generateVerificationCode,
+  isValidPhoneNumber,
+} from "./utils/validation";
 
 const app = express();
 app.use(express.json());
+app.use(helmet());
+app.disable("x-powered-by");
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("Welcome to the Express app with TypeScript!");
+app.post("/signup", (req: Request, res: Response) => {
+  res.send("sign up route");
+});
+
+app.post("/login", (req: Request, res: Response) => {
+  res.send("log in route");
 });
 
 app.listen(3000, () => {
