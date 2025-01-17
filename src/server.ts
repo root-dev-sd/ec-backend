@@ -1,6 +1,8 @@
 import express, { Request, Response } from "express";
 import helmet from "helmet";
-import prisma from "../db";
+import { genSalt, hash } from "bcrypt-ts";
+import prisma from "./db";
+import { Validator } from "jsonschema";
 import {
   isValidFullName,
   ValidationResult,
@@ -15,11 +17,57 @@ app.use(express.json());
 app.use(helmet());
 app.disable("x-powered-by");
 
-app.post("/signup", (req: Request, res: Response) => {
-  res.send("sign up route");
+const v = new Validator();
+
+const signUpSchema = {
+  type: "object",
+  properties: {
+    name: { type: "string" },
+    email: { type: "string" },
+    phoneNumber: { type: "string" },
+    password: { type: "strig" },
+  },
+  required: ["name", "email", "phoneNumber", "password"],
+  additionalProperties: false,
+};
+
+app.post("/api/v1/signup", async (req: Request, res: Response) => {
+  const data = req.body;
+  if (!v.validate(data, signUpSchema).valid) {
+    res.status(400).json({ message: "invalid request body" });
+  }
+  const { name, email, phoneNumber, password } = data;
+  const nameResult = isValidFullName(name);
+  if (!nameResult.isValid) {
+    res.status(400).json(nameResult.error);
+  }
+  if (!isValidPhoneNumber(phoneNumber)) {
+    res.status(400).json({ message: "phone number not compatible" });
+  }
+  const exist = await prisma.user.findUnique({
+    where: { email },
+  });
+  if (exist) {
+    res.status(409).json({ message: "user already exists" });
+  }
+  genSalt(10)
+    .then((salt) => hash(password, salt))
+    .then((hash) => {
+      const newUser = prisma.user.create({
+        data: {
+          name,
+          email,
+          phoneNumber,
+          password: hash,
+        },
+      });
+    })
+    .then(() => {
+      res.status(201).json({ message: "user created successfully" });
+    });
 });
 
-app.post("/login", (req: Request, res: Response) => {
+app.post("/api/v1/login", (req: Request, res: Response) => {
   res.send("log in route");
 });
 
