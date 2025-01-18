@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import helmet from "helmet";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import cors from "cors";
 import { genSalt, hash, compare } from "bcrypt-ts";
 import prisma from "./db";
 import { Validator } from "jsonschema";
@@ -18,6 +19,7 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(helmet());
+app.use(cors());
 app.disable("x-powered-by");
 
 const v = new Validator();
